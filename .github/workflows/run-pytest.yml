@@ -1,0 +1,55 @@
+name: Run pytest
+
+# Enhancement: only trigger when it matters.
+on:
+  # Stage 1 - work is proposed: test every pull request into main
+  # before it is merged.
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/run-pytest.yml"
+
+  # Stage 2 - work is merged: test pushes to main only.
+  # Pushes to feature branches do not trigger a run; they are tested once,
+  # when a pull request is opened or updated.
+  push:
+    branches:
+      - main
+    # Skip runs when only non-code files change (e.g. documents).
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/run-pytest.yml"
+
+  # Manual run button in the Actions tab (e.g. for the demo).
+  workflow_dispatch:
+
+# Enhancement: if several pushes arrive quickly on the same branch,
+# cancel the older run that is still in progress and keep only the newest.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run pytest with coverage
+        run: python -m pytest -v --cov=src --cov-report=term-missing
