@@ -7,3 +7,5 @@ def can_afford(balance_cents, price_cents):
         raise ValueError("argument outside permitted range")
 
     return int(balance_cents >= price_cents)
+
+#
