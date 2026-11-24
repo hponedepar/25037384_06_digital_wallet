@@ -8,4 +8,4 @@ def can_afford(balance_cents, price_cents):
 
     return int(balance_cents >= price_cents)
 
-#
+##
